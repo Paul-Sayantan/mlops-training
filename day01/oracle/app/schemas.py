@@ -66,6 +66,20 @@ class MarriageResponse(BaseModel):
     disclaimer: str
 
 
+class BurnoutRequest(BaseModel):
+    meetings_per_week: int = Field(ge=0, le=100)
+    on_call_weeks_per_year: int = Field(ge=0, le=52)
+    unread_emails: int = Field(ge=0, le=1_000_000)
+
+
+class BurnoutResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
+    predicted_years_until_burnout: float
+    model_version: str
+    disclaimer: str
+
+
 class HoroscopeResponse(BaseModel):
     sign: str
     message: str

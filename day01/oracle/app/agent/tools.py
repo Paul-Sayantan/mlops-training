@@ -109,4 +109,27 @@ async def predict_marriage_date(
         return _error(exc)
 
 
-ORACLE_TOOLS = [get_horoscope, predict_income, predict_marriage_date]
+@tool
+async def predict_burnout(
+    meetings_per_week: int,
+    on_call_weeks_per_year: int,
+    unread_emails: int,
+) -> str:
+    """Estimate years until burnout using meetings per week,
+    on-call weeks per year, and unread email count."""
+
+    try:
+        result = await _post(
+            "/predict/burnout",
+            {
+                "meetings_per_week": meetings_per_week,
+                "on_call_weeks_per_year": on_call_weeks_per_year,
+                "unread_emails": unread_emails,
+            },
+        )
+        return json.dumps(result)
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+ORACLE_TOOLS = [get_horoscope, predict_income, predict_marriage_date, predict_burnout]

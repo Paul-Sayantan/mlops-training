@@ -5,6 +5,8 @@ from fastapi import APIRouter, Query, Request
 
 from app.horoscope import horoscope_for
 from app.schemas import (
+    BurnoutRequest,
+    BurnoutResponse,
     HoroscopeResponse,
     IncomeRequest,
     IncomeResponse,
@@ -53,3 +55,31 @@ async def horoscope(
 ) -> HoroscopeResponse:
     sign, message = horoscope_for(birthday)
     return HoroscopeResponse(sign=sign, message=message)
+
+
+BURNOUT_DISCLAIMER = (
+    "This is a demonstration estimate, not a clinical assessment or validated prediction."
+)
+
+
+@router.post("/predict/burnout", response_model=BurnoutResponse)
+async def predict_burnout(
+    body: BurnoutRequest,
+    request: Request,
+) -> BurnoutResponse:
+    models = request.app.state.models
+
+    # Demonstration scoring logic; replace with a trained model.
+    workload_score = (
+        body.meetings_per_week * 0.05
+        + body.on_call_weeks_per_year * 0.03
+        + min(body.unread_emails, 100_000) / 10_000 * 0.1
+    )
+
+    years = max(0.5, 10.0 - workload_score)
+
+    return BurnoutResponse(
+        predicted_years_until_burnout=round(years, 2),
+        model_version=getattr(models, "burnout_version", "demo-v1"),
+        disclaimer=BURNOUT_DISCLAIMER,
+    )

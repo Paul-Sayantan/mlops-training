@@ -3,7 +3,13 @@ import json
 import pytest
 
 from app.agent import tools as tools_module
-from app.agent.tools import ORACLE_TOOLS, get_horoscope, predict_income, set_api_base_url
+from app.agent.tools import (
+    ORACLE_TOOLS,
+    get_horoscope,
+    predict_burnout,
+    predict_income,
+    set_api_base_url,
+)
 
 INCOME_ARGS = {
     "country": "Germany",
@@ -17,12 +23,34 @@ INCOME_ARGS = {
 }
 
 
-def test_three_tools_registered():
+# def test_three_tools_registered():
+#     assert {t.name for t in ORACLE_TOOLS} == {
+#         "get_horoscope",
+#         "predict_income",
+#         "predict_marriage_date",
+#     }
+def test_four_tools_registered():
     assert {t.name for t in ORACLE_TOOLS} == {
         "get_horoscope",
         "predict_income",
         "predict_marriage_date",
+        "predict_burnout",
     }
+
+
+async def test_predict_burnout_tool_calls_api(api_via_test_client):
+    out = await predict_burnout.ainvoke(
+        {
+            "meetings_per_week": 25,
+            "on_call_weeks_per_year": 12,
+            "unread_emails": 5000,
+        }
+    )
+
+    data = json.loads(out)
+    assert "predicted_years_until_burnout" in data
+    assert "model_version" in data
+    assert "disclaimer" in data
 
 
 @pytest.fixture
