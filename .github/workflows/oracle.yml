@@ -126,14 +126,14 @@ jobs:
           cat >> remote.sh <<'REMOTE'
           set -euo pipefail
           image="$1"
-          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-          docker pull "$image"
-          docker logout ghcr.io >/dev/null
-          docker rm -f oracle 2>/dev/null || true
-          docker run -d --restart unless-stopped -p 8000:8000 --env-file ~/.env --name oracle "$image"
+          echo "$GHCR_TOKEN" | /usr/bin/docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
+          /usr/bin/docker pull "$image"
+          /usr/bin/docker logout ghcr.io >/dev/null
+          /usr/bin/docker rm -f oracle 2>/dev/null || true
+          /usr/bin/docker run -d --restart unless-stopped -p 8000:8000 --env-file ~/.env --name oracle "$image"
           for i in $(seq 1 30); do curl -sf localhost:8000/health >/dev/null && break; sleep 1; done
           curl -s localhost:8000/health; echo
-          docker image prune -f >/dev/null
+          /usr/bin/docker image prune -f >/dev/null
           REMOTE
           ssh -i ~/.ssh/deploy_key "${{ vars.EC2_USER || 'ec2-user' }}@${{ vars.EC2_HOST }}" bash -s "$image" < remote.sh
 
