@@ -50,7 +50,6 @@ async def test_predict_burnout_tool_calls_api(api_via_test_client):
     data = json.loads(out)
     assert "predicted_years_until_burnout" in data
     assert "model_version" in data
-    # assert "invalid_key" in data #for checking failed test 
     assert "disclaimer" in data
 
 
