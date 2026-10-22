@@ -5,7 +5,7 @@
 #
 # Every step here is one of the six commands from Day 1, done by a machine instead of you.
 
-name: oracle
+name: oracleforECR
 
 on:
   push:
@@ -98,8 +98,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # --------------------------------------------------------------- 3. deploy
-  deploy:
-    push-to-ecr:
+push-to-ecr:
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -112,7 +111,7 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
         id: ecr
       - run: |
-          src="ghcr.io/OWNER/oracle:${GITHUB_SHA::7}"
+          src="ghcr.io/paul-sayantan/oracle:${GITHUB_SHA::7}"
           dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
           docker pull "$src"
           docker tag "$src" "$dst"
