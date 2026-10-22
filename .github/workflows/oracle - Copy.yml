@@ -99,43 +99,21 @@ jobs:
 
   # --------------------------------------------------------------- 3. deploy
   deploy:
-    name: Deploy to EC2
+    push-to-ecr:
     needs: build-and-push
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    # Only runs when the repo has the EC2_HOST variable set. Forks without it stop here.
-    if: ${{ vars.EC2_HOST != '' }}
-    permissions:
-      contents: read
-      packages: read           # the server logs in with this run's token to pull the image
-    environment:
-      name: ec2
-      url: http://${{ vars.EC2_HOST }}:8000
     steps:
-      - name: Put the SSH key where ssh expects it
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ vars.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Pull the exact image and swap the container
-        run: |
-          image="${{ needs.build-and-push.outputs.image }}:${GITHUB_SHA::7}"
-          # The token travels inside the script over ssh, never on a command line.
-          printf 'export GHCR_USER=%q GHCR_TOKEN=%q\n' "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}" > remote.sh
-          cat >> remote.sh <<'REMOTE'
-          set -euo pipefail
-          image="$1"
-          echo "$GHCR_TOKEN" | /usr/bin/docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-          /usr/bin/docker pull "$image"
-          /usr/bin/docker logout ghcr.io >/dev/null
-          /usr/bin/docker rm -f oracle 2>/dev/null || true
-          /usr/bin/docker run -d --restart unless-stopped -p 8000:8000 --env-file ~/.env --name oracle "$image"
-          for i in $(seq 1 30); do curl -sf localhost:8000/health >/dev/null && break; sleep 1; done
-          curl -s localhost:8000/health; echo
-          /usr/bin/docker image prune -f >/dev/null
-          REMOTE
-          ssh -i ~/.ssh/deploy_key "${{ vars.EC2_USER || 'ec2-user' }}@${{ vars.EC2_HOST }}" bash -s "$image" < remote.sh
-
-      - name: Smoke test from the outside
-        run: curl -sf "http://${{ vars.EC2_HOST }}:8000/health"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - run: |
+          src="ghcr.io/OWNER/oracle:${GITHUB_SHA::7}"
+          dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
+          docker pull "$src"
+          docker tag "$src" "$dst"
+          docker push "$dst"
