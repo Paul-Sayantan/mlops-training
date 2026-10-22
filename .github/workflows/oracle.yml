@@ -111,7 +111,7 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
         id: ecr
       - run: |
-          src="ghcr.io/OWNER/oracle:${GITHUB_SHA::7}"
+          src="ghcr.io/paul-sayantan/oracle:${GITHUB_SHA::7}"
           dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
           docker pull "$src"
           docker tag "$src" "$dst"
