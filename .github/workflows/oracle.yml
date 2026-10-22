@@ -98,21 +98,21 @@ jobs:
           cache-to: type=gha,mode=max
 
   # --------------------------------------------------------------- 3. deploy
-push-to-ecr:
-  needs: build-and-push
-  if: github.ref == 'refs/heads/main'
-  runs-on: ubuntu-latest
-  steps:
-    - uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-    - uses: aws-actions/amazon-ecr-login@v2
-      id: ecr
-    - run: |
-        src="ghcr.io/OWNER/oracle:${GITHUB_SHA::7}"
-        dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
-        docker pull "$src"
-        docker tag "$src" "$dst"
-        docker push "$dst"
+  push-to-ecr:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr
+      - run: |
+          src="ghcr.io/OWNER/oracle:${GITHUB_SHA::7}"
+          dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
+          docker pull "$src"
+          docker tag "$src" "$dst"
+          docker push "$dst"
