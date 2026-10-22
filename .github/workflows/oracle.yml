@@ -112,7 +112,7 @@ jobs:
         id: ecr
       - run: |
           src="ghcr.io/paul-sayantan/oracle:${GITHUB_SHA::7}"
-          dst="${{ steps.ecr.outputs.registry }}/oracle:${GITHUB_SHA::7}"
+          dst="${{ steps.ecr.outputs.registry }}/oracle-paul:${GITHUB_SHA::7}"
           docker pull "$src"
           docker tag "$src" "$dst"
           docker push "$dst"
