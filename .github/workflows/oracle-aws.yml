@@ -39,8 +39,6 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff check .
       - run: uv run pytest -q
-  name: id-token
-      
 
   build-and-push:
     needs: test
@@ -52,9 +50,6 @@ jobs:
     outputs:
       image_tag: ${{ steps.meta.outputs.tag }}
     steps:
-      - run: |
-          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
-          echo $ID_TOKEN | base64
       - uses: actions/checkout@v4
 
       # No access key anywhere. GitHub proves "this is repo X on branch main" and AWS hands
