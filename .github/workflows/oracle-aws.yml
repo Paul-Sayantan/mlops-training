@@ -51,10 +51,10 @@ jobs:
       image_tag: ${{ steps.meta.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
-      - name: Get GitHub OIDC ID token
-        run: |
-          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
-          echo "$ID_TOKEN" | base64
+      # - name: Get GitHub OIDC ID token
+      #   run: |
+      #     ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://demo" | jq -r .value)
+      #     echo "$ID_TOKEN" | base64
 
       # No access key anywhere. GitHub proves "this is repo X on branch main" and AWS hands
       # back one-hour credentials for the role that OracleBaseStack created.
